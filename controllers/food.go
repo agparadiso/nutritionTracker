@@ -1,16 +1,24 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/agparadiso/nutritionTracker/models"
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	dbname          = "nutritionTracker"
+	foodTable       = "foods"
+	ingredientTable = "ingredients"
+)
+
 //FoodRequest is to unmarshall the request
 type FoodRequest struct {
-	Name        string `json:"name"`
-	Ingredients string `json:"ingredients"`
+	Name        string   `json:"name"`
+	Ingredients []string `json:"ingredients"`
 }
 
 //FoodController is the controller type
@@ -40,7 +48,7 @@ func (fc *FoodController) GetFood(c *gin.Context) {
 	f := models.Food{}
 
 	// Fetch Food
-	if err := fc.session.DB("nutritionTracker").C("foods").FindId(oid).One(&f); err != nil {
+	if err := fc.session.DB(dbname).C(foodTable).FindId(oid).One(&f); err != nil {
 		c.JSON(404, gin.H{"error": "Failed to get Food from DB"})
 		return
 	}
@@ -53,25 +61,29 @@ func (fc *FoodController) PostFood(c *gin.Context) {
 	var foodRequest = FoodRequest{}
 	c.Bind(&foodRequest)
 
+	fmt.Println(foodRequest.Ingredients)
 	var food models.Food
 	food.Name = foodRequest.Name
 
 	var ingredient models.Ingredient
 
 	ic := NewIngredientController(fc.session)
-	// Fetch ingredient
-	if err := ic.session.DB("nutritionTracker").C("ingredients").FindId(bson.ObjectIdHex(foodRequest.Ingredients)).One(&ingredient); err != nil {
-		c.JSON(404, gin.H{"error": "Failed to get Ingredient from DB"})
-		return
-	}
 
-	food.Ingredients = append(food.Ingredients, ingredient)
+	for _, i := range foodRequest.Ingredients {
+		// Fetch ingredient
+		if err := ic.session.DB(dbname).C(ingredientTable).FindId(bson.ObjectIdHex(i)).One(&ingredient); err != nil {
+			c.JSON(404, gin.H{"error": "Failed to get Ingredient from DB"})
+			return
+		}
+
+		food.Ingredients = append(food.Ingredients, ingredient)
+	}
 
 	// Add an Id
 	food.ID = bson.NewObjectId()
 
 	// Write the food to mongo
-	fc.session.DB("nutritionTracker").C("foods").Insert(food)
+	fc.session.DB(dbname).C(foodTable).Insert(food)
 
 	// Marshal provided interface into JSON structure
 	if food.Name != "" {
@@ -79,7 +91,7 @@ func (fc *FoodController) PostFood(c *gin.Context) {
 	} else {
 		c.JSON(422, gin.H{"error": "Fields are empty"})
 	}
-	//http post http://localhost:8080/api/v1/food name=huevoDuro ingredients=593d6f5686ce6452dfe5dc7f
+	//http post http://localhost:8080/api/v1/food name=huevoDuro ingredients:='["593d6f5686ce6452dfe5dc7f", "593ec50286ce649d3c417dae"]'
 }
 
 // DeleteFood removes an existing Food
@@ -97,7 +109,7 @@ func (fc *FoodController) DeleteFood(c *gin.Context) {
 	oid := bson.ObjectIdHex(id)
 
 	// Remove food
-	if err := fc.session.DB("nutritionTracker").C("foods").RemoveId(oid); err != nil {
+	if err := fc.session.DB(dbname).C(foodTable).RemoveId(oid); err != nil {
 		c.JSON(404, gin.H{"error": "Failed to remove Food"})
 		return
 	}

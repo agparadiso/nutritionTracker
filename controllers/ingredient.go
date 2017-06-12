@@ -34,7 +34,7 @@ func (ic *IngredientController) GetIngredient(c *gin.Context) {
 	i := models.Ingredient{}
 
 	// Fetch ingredient
-	if err := ic.session.DB("nutritionTracker").C("ingredients").FindId(oid).One(&i); err != nil {
+	if err := ic.session.DB(dbname).C(ingredientTable).FindId(oid).One(&i); err != nil {
 		c.JSON(404, gin.H{"error": "Failed to get Ingredient from DB"})
 		return
 	}
@@ -51,7 +51,7 @@ func (ic *IngredientController) PostIngredient(c *gin.Context) {
 	ingredient.ID = bson.NewObjectId()
 
 	// Write the ingredient to mongo
-	ic.session.DB("nutritionTracker").C("ingredients").Insert(ingredient)
+	ic.session.DB(dbname).C(ingredientTable).Insert(ingredient)
 
 	// Marshal provided interface into JSON structure
 	if ingredient.Name != "" {
@@ -77,7 +77,7 @@ func (ic *IngredientController) DeleteIngredient(c *gin.Context) {
 	oid := bson.ObjectIdHex(id)
 
 	// Remove Ingredient
-	if err := ic.session.DB("nutritionTracker").C("ingredients").RemoveId(oid); err != nil {
+	if err := ic.session.DB(dbname).C(ingredientTable).RemoveId(oid); err != nil {
 		c.JSON(404, gin.H{"error": "Failed to remove ingredient"})
 		return
 	}
