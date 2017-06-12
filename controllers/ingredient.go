@@ -50,7 +50,7 @@ func (ic *IngredientController) PostIngredient(c *gin.Context) {
 	// Add an Id
 	ingredient.ID = bson.NewObjectId()
 
-	// Write the user to mongo
+	// Write the ingredient to mongo
 	ic.session.DB("nutritionTracker").C("ingredients").Insert(ingredient)
 
 	// Marshal provided interface into JSON structure
@@ -76,7 +76,7 @@ func (ic *IngredientController) DeleteIngredient(c *gin.Context) {
 	// Grab id
 	oid := bson.ObjectIdHex(id)
 
-	// Remove user
+	// Remove Ingredient
 	if err := ic.session.DB("nutritionTracker").C("ingredients").RemoveId(oid); err != nil {
 		c.JSON(404, gin.H{"error": "Failed to remove ingredient"})
 		return

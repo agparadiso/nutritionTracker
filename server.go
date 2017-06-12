@@ -12,12 +12,17 @@ import (
 func main() {
 	r := gin.Default()
 	ic := controllers.NewIngredientController(getSession())
+	fc := controllers.NewFoodController(getSession())
 
 	v1 := r.Group("api/v1")
 	{
 		v1.GET("/ingredient/:id", ic.GetIngredient)
 		v1.POST("/ingredient", ic.PostIngredient)
 		v1.DELETE("/ingredient/:id", ic.DeleteIngredient)
+
+		v1.GET("/food/:id", fc.GetFood)
+		v1.POST("/food", fc.PostFood)
+		v1.DELETE("/food/:id", fc.DeleteFood)
 	}
 
 	r.Run(":8080")
