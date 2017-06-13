@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 
-	"github.com/agparadiso/nutritionTracker/models"
+	foodPkg "github.com/agparadiso/nutritionTracker/food"
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -45,7 +45,7 @@ func (fc *FoodController) GetFood(c *gin.Context) {
 	oid := bson.ObjectIdHex(id)
 
 	// Stub Food
-	f := models.Food{}
+	f := foodPkg.Food{}
 
 	// Fetch Food
 	if err := fc.session.DB(dbname).C(foodTable).FindId(oid).One(&f); err != nil {
@@ -62,10 +62,10 @@ func (fc *FoodController) PostFood(c *gin.Context) {
 	c.Bind(&foodRequest)
 
 	fmt.Println(foodRequest.Ingredients)
-	var food models.Food
+	var food foodPkg.Food
 	food.Name = foodRequest.Name
 
-	var ingredient models.Ingredient
+	var ingredient foodPkg.Ingredient
 
 	ic := NewIngredientController(fc.session)
 

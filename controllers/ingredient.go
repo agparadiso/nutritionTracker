@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/agparadiso/nutritionTracker/models"
+	foodPkg "github.com/agparadiso/nutritionTracker/food"
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -31,7 +31,7 @@ func (ic *IngredientController) GetIngredient(c *gin.Context) {
 	oid := bson.ObjectIdHex(id)
 
 	// Stub ingredient
-	i := models.Ingredient{}
+	i := foodPkg.Ingredient{}
 
 	// Fetch ingredient
 	if err := ic.session.DB(dbname).C(ingredientTable).FindId(oid).One(&i); err != nil {
@@ -44,7 +44,7 @@ func (ic *IngredientController) GetIngredient(c *gin.Context) {
 
 //PostIngredient creates a new Ingredient
 func (ic *IngredientController) PostIngredient(c *gin.Context) {
-	var ingredient models.Ingredient
+	var ingredient foodPkg.Ingredient
 	c.Bind(&ingredient)
 
 	// Add an Id
