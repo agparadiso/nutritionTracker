@@ -9,34 +9,25 @@ import (
 
 //IngredientController is the controller type
 type IngredientController struct {
-	session *mgo.Session
+	session     *mgo.Session
+	foodFetcher foodPkg.Fetcher
 }
 
 //NewIngredientController returns a new controller
-func NewIngredientController(s *mgo.Session) *IngredientController {
-	return &IngredientController{session: s}
+func NewIngredientController(s *mgo.Session, ff foodPkg.Fetcher) *IngredientController {
+	return &IngredientController{
+		session:     s,
+		foodFetcher: ff,
+	}
 }
 
 //GetIngredient returns a Ingredient
 func (ic *IngredientController) GetIngredient(c *gin.Context) {
 	id := c.Params.ByName("id")
 
-	// Verify id is ObjectId, otherwise bail
-	if !bson.IsObjectIdHex(id) {
+	i, err := ic.foodFetcher.FetchIngredient(id, ic.session)
+	if err != nil {
 		c.JSON(404, gin.H{"error": "Ingredient not found"})
-		return
-	}
-
-	// Grab id
-	oid := bson.ObjectIdHex(id)
-
-	// Stub ingredient
-	i := foodPkg.Ingredient{}
-
-	// Fetch ingredient
-	if err := ic.session.DB(dbname).C(ingredientTable).FindId(oid).One(&i); err != nil {
-		c.JSON(404, gin.H{"error": "Failed to get Ingredient from DB"})
-		return
 	}
 	c.JSON(200, i)
 	//http get http://localhost:8080/api/v1/ingredient/593d6f5686ce6452dfe5dc7f

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Typeform/andorra/pkg/log"
 	"github.com/agparadiso/nutritionTracker/controllers"
+	"github.com/agparadiso/nutritionTracker/persistence/mongoDB"
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	ic := controllers.NewIngredientController(getSession())
+	ic := controllers.NewIngredientController(getSession(), mongoDB.NewIngredientFetcher())
 	fc := controllers.NewFoodController(getSession())
 
 	v1 := r.Group("api/v1")

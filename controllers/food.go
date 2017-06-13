@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	foodPkg "github.com/agparadiso/nutritionTracker/food"
+	"github.com/agparadiso/nutritionTracker/persistence/mongoDB"
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -67,7 +68,7 @@ func (fc *FoodController) PostFood(c *gin.Context) {
 
 	var ingredient foodPkg.Ingredient
 
-	ic := NewIngredientController(fc.session)
+	ic := NewIngredientController(fc.session, mongoDB.NewIngredientFetcher())
 
 	for _, i := range foodRequest.Ingredients {
 		// Fetch ingredient
