@@ -24,37 +24,40 @@ type FoodRequest struct {
 
 //FoodController is the controller type
 type FoodController struct {
-	session *mgo.Session
+	session     *mgo.Session
+	foodFetcher foodPkg.Fetcher
 }
 
 //NewFoodController returns a new controller
-func NewFoodController(s *mgo.Session) *FoodController {
-	return &FoodController{session: s}
+func NewFoodController(s *mgo.Session, ff foodPkg.Fetcher) *FoodController {
+	return &FoodController{
+		session:     s,
+		foodFetcher: ff,
+	}
 }
 
 //GetFood returns a Food
 func (fc *FoodController) GetFood(c *gin.Context) {
 	id := c.Params.ByName("id")
 
-	// Verify id is ObjectId, otherwise bail
-	if !bson.IsObjectIdHex(id) {
+	f, err := fc.foodFetcher.FetchFood(id, fc.session)
+	if err != nil {
 		c.JSON(404, gin.H{"error": "Food not found"})
-		return
 	}
 
-	// Grab id
-	oid := bson.ObjectIdHex(id)
-
-	// Stub Food
-	f := foodPkg.Food{}
-
-	// Fetch Food
-	if err := fc.session.DB(dbname).C(foodTable).FindId(oid).One(&f); err != nil {
-		c.JSON(404, gin.H{"error": "Failed to get Food from DB"})
-		return
-	}
 	c.JSON(200, f)
 	//http get http://localhost:8080/api/v1/food/593e4b0686ce646e7bd4907a
+}
+
+//GetAllFood returns the list of all Food
+func (fc *FoodController) GetAllFood(c *gin.Context) {
+	f, err := fc.foodFetcher.FetchAllFood(fc.session)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Food not found"})
+	}
+
+	c.JSON(200, f)
+	//http get http://localhost:8080/api/v1/food/
 }
 
 //PostFood creates a new Food

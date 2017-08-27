@@ -13,7 +13,7 @@ import (
 func main() {
 	r := gin.Default()
 	ic := controllers.NewIngredientController(getSession(), mongoDB.NewIngredientFetcher())
-	fc := controllers.NewFoodController(getSession())
+	fc := controllers.NewFoodController(getSession(), mongoDB.NewIngredientFetcher())
 
 	v1 := r.Group("api/v1")
 	{
@@ -21,6 +21,7 @@ func main() {
 		v1.POST("/ingredient", ic.PostIngredient)
 		v1.DELETE("/ingredient/:id", ic.DeleteIngredient)
 
+		v1.GET("/food", fc.GetAllFood)
 		v1.GET("/food/:id", fc.GetFood)
 		v1.POST("/food", fc.PostFood)
 		v1.DELETE("/food/:id", fc.DeleteFood)
